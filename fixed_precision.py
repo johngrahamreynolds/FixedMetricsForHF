@@ -7,9 +7,10 @@ from sklearn.metrics import precision_score
 # could in principle subclass Precision, but ideally we can work the fix into the Precision class to maintain SOLID code
 class FixedPrecision(evaluate.Metric):
 
-    def __init__(self, average="binary"):
+    def __init__(self, average="binary", zero_division="warn"):
         super().__init__()
         self.average = average
+        self.zero_division = zero_division
         # additional values passed to compute() could and probably should (?) all be passed here so that the final computation is configured immediately at Metric instantiation
 
     def _info(self):
@@ -28,7 +29,7 @@ class FixedPrecision(evaluate.Metric):
                     "references": datasets.Value("int32"),
                 }
             ),
-            reference_urls=["https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html"],
+            reference_urls=["https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html"],
         )
     
     # could remove specific kwargs like average, sample_weight from _compute() method and simply pass them to the underlying scikit-learn function in the form of a class var self.*
@@ -37,6 +38,6 @@ class FixedPrecision(evaluate.Metric):
         self, predictions, references, labels=None, pos_label=1, average="binary", sample_weight=None, zero_division="warn",
     ):
         score = precision_score(
-            references, predictions, labels=labels, pos_label=pos_label, average=self.average, sample_weight=sample_weight, zero_division=zero_division,
+            references, predictions, labels=labels, pos_label=pos_label, average=self.average, sample_weight=sample_weight, zero_division=self.zero_division,
         )
         return {"precision": float(score) if score.size == 1 else score}
